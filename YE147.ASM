@@ -123,6 +123,7 @@ LOOPB:	MOV AL, BYTE PTR BUF[BX+2];得到字符串最尾端的字符，注意加2
 		JA GETWR
 		SUB AX, 30H
 		MUL WORD PTR REXP	;AX与累乘器相乘，保存至AX
+		JC	GETWR			;检查输入是否超出范围
 		ADD WORD PTR READ, AX;READ加上这个值
 		JC	GETWR			;检查输入是否超出范围
 		MOV AX, 10			;累乘器乘10
@@ -165,7 +166,7 @@ OUTPUT PROC					;本函数用于将一个数按照10进制位输出，输出的�
 		XOR CX, CX			;清零
 LOOPI:	XOR DX, DX
 		DIV BX				;AX除10除数保存至AX，余数保存至DX
-		OR 	DX, 0E30H		;转换为ASCII码并将15号中断放入AL
+		OR 	DX, 0E30H		;转换为ASCII码并将15号调用放入AL
 		PUSH DX				;DX压栈保存输出			
 		INC CX				;计数
 		CMP AX, 0			;循环纸质AX为0
