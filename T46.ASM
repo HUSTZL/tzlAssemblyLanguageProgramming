@@ -1,0 +1,76 @@
+.386
+DATA SEGMENT USE16
+NUM		DB	'Dear sirs,', 0AH, 0DH
+		DB	'Ive got the message Phase error between', 0AH, 0DH
+		DB	'passes when using the masm to assemble a', 0AH, 0DH
+		DB	'routine.  What does this message mean, and how', 0AH, 0DH
+		DB	'may I solve this problem?', 0AH, 0DH
+		DB	'Any help is very welcome.', 0AH, 0DH
+		DB	'Thanks in advance,', 0AH, 0DH
+		DB	'Daniel Sadoc', 0AH, 0DH, 0H
+OUT1	DB	'WORNG!!', 0AH, 0DH, '$'
+DATA ENDS
+
+STACK SEGMENT USE16 STACK
+		DW	100 DUP(0)
+STACK ENDS
+
+CODE SEGMENT USE16
+	ASSUME CS:CODE, SS:STACK, DS:DATA
+START:	MOV AX, DATA
+		MOV DS, AX
+		MOV SI, 0
+		MOV DI, 0
+		MOV CX, 0
+		MOV BX, 0
+LOOPA:	MOV AL, NUM[SI]
+		CMP NUM[SI+1], 0H
+		JE	NEXT
+		MOV AH, 2
+		MOV DL, AL
+		INT 21H
+		CMP AL, 0AH
+		JNE	LOPAEN
+		CMP NUM[SI+1], 0DH
+		JNE	LOPAEN
+		INC CX
+		CMP CX, 4
+		JE	DELLIN
+		CMP CX, 5
+		JE	NETLIN
+		JMP LOPAEN
+DELLIN:	CMP NUM[SI+2], 0H
+		JE	LOPAEN
+		MOV DI, SI
+		ADD DI, 2
+		JMP	LOPAEN
+NETLIN:	CMP NUM[SI+2], 0H
+		JE	LOPAEN
+		MOV BX, SI
+		ADD BX, 2
+		JMP	LOPAEN
+LOPAEN:	INC SI
+		JMP LOOPA
+		INT 3H
+NEXT:	MOV AL, NUM[BX]
+		MOV NUM[DI], AL
+		INC BX
+		INC DI
+		CMP NUM[BX], 0
+		JNE NEXT
+		MOV NUM[BX], 0
+		MOV SI, 0
+		MOV AH, 2H
+LOOPB:	MOV AL, NUM[SI]
+		CMP AL, 0
+		JE 	EXIT
+		MOV DL, AL
+		INT 21H
+		INC SI
+		JMP LOOPB
+EXIT:	MOV AH, 4CH
+		INT 21H
+		
+CODE ENDS
+	END START
+		

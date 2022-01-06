@@ -1,0 +1,24 @@
+.386
+CODE SEGMENT USE16
+        ASSUME CS:CODE
+START:  CALL OUTPUT
+        DB 'VERY GOOD$', 0DH, 0AH, 0
+        CALL OUTPUT
+        DB 'ASSEMBLY', 0
+        MOV AH, 4CH
+        INT 21H
+
+OUTPUT PROC
+        POP SI
+LOOPA:  MOV DL, CS:[SI]
+        INC SI
+        CMP DL,0
+        JE EXIT
+        MOV AH, 2
+        INT 21H
+        JMP LOOPA
+EXIT:   PUSH SI
+        RET
+OUTPUT ENDP
+CODE ENDS
+        END START

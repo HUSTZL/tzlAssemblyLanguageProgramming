@@ -1,0 +1,59 @@
+.386
+DATA SEGMENT USE16
+BUF1    DB      'ASSEMBLY GOOD!',0
+BUF2    DB      'ASSEMBLY GOOD!',0
+OUT1    DB      'SAME', 0DH, 0AH, '$'
+OUT2    DB      'NOT SAME', 0DH, 0AH, '$'
+DATA ENDS
+
+STACK SEGMENT USE16 STACK
+        DW      100 DUP(0)
+STACK ENDS
+
+CODE SEGMENT USE16
+        ASSUME CS:CODE, SS:STACK, DS:DATA
+START:  MOV AX, DATA
+		MOV DS, AX
+		MOV AX, STACK
+		MOV SS, AX
+		PUSH OFFSET BUF1
+        PUSH OFFSET BUF2
+        CALL STRCMP
+        CMP AX, 1
+        JNE NOTSA
+        LEA DX, OUT1
+        JMP EXIT
+NOTSA:  LEA DX, OUT2
+EXIT:   MOV AH, 9
+        INT 21H
+        MOV AH, 4CH
+        INT 21H
+
+STRCMP PROC
+        PUSH BP
+        MOV BP, SP
+        PUSHA
+        PUSHF
+        MOV SI, WORD PTR [BP+4]
+        MOV DI, WORD PTR [BP+6]
+LOOPA:  MOV AL, BYTE PTR [SI]
+        CMP AL, BYTE PTR [DI]
+        JNE RETDIF
+        CMP AL, 0
+        JE RETSAM
+        INC SI
+        INC DI
+        JMP LOOPA
+RETSAM: POPF
+        POPA
+        POP BP
+        MOV AX, 1
+        RET 4
+RETDIF: POPF
+        POPA
+        POP BP
+        MOV AX, 0
+        RET 4
+STRCMP ENDP
+CODE ENDS
+        END START
