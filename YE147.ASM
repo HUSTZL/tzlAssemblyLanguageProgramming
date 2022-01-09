@@ -1,4 +1,24 @@
 .386
+OUTSTR MACRO TOPUT
+		PUSH DX
+		PUSH AX
+		LEA DX, TOPUT
+		MOV AH, 9
+		INT 21H
+		POP AX
+		POP DX
+	ENDM
+
+GETSTR MACRO TOIN
+		PUSH DX
+		PUSH AX
+		LEA DX, TOIN
+		MOV AH, 10
+		INT 21H
+		POP AX
+		POP DX
+	ENDM
+
 DATA SEGMENT USE16
 N		DW		0			;读入的总数据数
 NUM		DW      0			;前六位是1的数据的个数
@@ -30,32 +50,24 @@ START:  MOV AX, DATA
 		MOV DS, AX
 		MOV AX, STACK
 		MOV SS, AX
-		LEA DX, OUT1		;输出提示信息1
-		MOV AH, 9
-		INT 21H
+		OUTSTR OUT1			;输出提示信息1
 LOOPC:	CALL GETNUM			;循环读入总数据数，直到读入成功
 		CMP WORD PTR READOK, 1H
 		JNE LOOPC
 		CMP WORD PTR READ, 10
 		JA	OVER
 		JMP NOVER
-OVER:	LEA DX, OUT4
-		MOV AH, 9
-		INT 21H
+OVER:	OUTSTR OUT4
 		JMP LOOPC
 NOVER:	MOV AX, WORD PTR READ;保存总数据量
 		MOV N, AX
 		MOV CX, AX
 		MOV BX, 0
-		LEA DX, OUT5		;输出提示信息
-		MOV AH, 9
-		INT 21H
+		OUTSTR OUT5		;输出提示信息
 		MOV AX, WORD PTR N
 		MOV WORD PTR OUTNUM, AX
 		CALL OUTPUT
-		LEA DX, OUT6
-		MOV AH, 9
-		INT 21H
+		OUTSTR OUT6
 LOOPF:	CMP CX, 0			;循环读入,判断N次
 		JE LOOPFND			;CX = 0循环结束，进行输出	
 LOOPG:	CALL GETNUM			;循环读入当前需判断的数，直到读入成功
@@ -71,15 +83,11 @@ LOOPG:	CALL GETNUM			;循环读入当前需判断的数，直到读入成功
 		ADD BX, 2
 NOTOK:	DEC CX
 		JMP LOOPF
-LOOPFND:LEA DX, OUT3		;输出提示信息3
-		MOV AH, 9
-		INT 21H
+LOOPFND:OUTSTR OUT3		;输出提示信息3
 		MOV AX, WORD PTR NUM;输出符合条件的数的总数
 		MOV WORD PTR OUTNUM, AX
 		CALL OUTPUT
-		LEA DX, CRLF		;输出换行
-		MOV AH, 9
-		INT 21H
+		OUTSTR CRLF		;输出换行
 		MOV CX, WORD PTR NUM;循环输出符合条件的数
 		MOV BX, 0
 LOOPH:	CMP CX, 0
@@ -87,9 +95,7 @@ LOOPH:	CMP CX, 0
 		MOV AX, WORD PTR OKNUM[BX];输出符合条件的数
 		MOV WORD PTR OUTNUM, AX
 		CALL OUTPUT
-		LEA DX, CRLF		;输出换行
-		MOV AH, 9
-		INT 21H
+		OUTSTR CRLF		;输出换行
 		ADD BX, 2
 		DEC CX
 		JMP LOOPH
@@ -105,9 +111,7 @@ GETNUM PROC					;本函数用于输入一个十进制数，保存至READ中，�
 		LEA DX, BUF			;输入一个字符串
 		MOV AH, 10
 		INT 21H
-		LEA DX, CRLF		;输出换行
-		MOV AH, 9
-		INT 21H
+		OUTSTR CRLF			;输出换行
 		MOV BL, BUF+1		;将字符串长度保存于BX
 		MOV BH, 0
 		CMP BX, 0			;判断字符串是否为空
@@ -131,9 +135,7 @@ LOOPB:	MOV AL, BYTE PTR BUF[BX+2];得到字符串最尾端的字符，注意加2
 		MOV WORD PTR REXP, AX
 		LOOP LOOPB
 		JMP ENDGET
-GETWR:	LEA DX, OUT2		;输出提示信息2
-		MOV AH, 9
-		INT 21H
+GETWR:	OUTSTR OUT2		;输出提示信息2
 		MOV WORD PTR READOK, 0H
 ENDGET:	POPF
 		POPA
